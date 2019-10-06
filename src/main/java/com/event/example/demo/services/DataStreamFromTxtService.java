@@ -54,12 +54,13 @@ public class DataStreamFromTxtService {
 
 
     public  boolean dataStreaming() throws FileNotFoundException {
+
         initBufferedReader();
 
         if (!file.exists()){
             throw new RuntimeException("the input file does not exist");
         }
-
+        // Start file reader manager
         ExecutorService taskExecutor = Executors.newFixedThreadPool(2);
         taskExecutor.execute(new Runnable() {
             @Override
@@ -67,21 +68,24 @@ public class DataStreamFromTxtService {
                 try {
                     readFileManager();
                 } catch (Exception e) {
-                    throw new RuntimeException("Exception Rasied in this thread", e);
+                    throw new RuntimeException("Exception raised in this thread", e);
                 }
             }
         });
+
+        // Start DB writer manager
         taskExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     writeDBManager();
                 } catch (InterruptedException e) {
-                    throw new RuntimeException("Exception Rasied in this thread", e);
+                    throw new RuntimeException("Exception raised in this thread", e);
                 }
             }
         });
 
+        //Wait for both managers finish
         taskExecutor.shutdown();
         try {
             taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -107,6 +111,7 @@ public class DataStreamFromTxtService {
                 try {
                     JSONObject obj = (JSONObject) jsonParser.parse(readLine);
                     obj.put("lineCount",lineCount);
+                    LOGGER.debug("The JSON transformed for line {} is {}", lineCount, obj);
                     toReturn.add(obj);
                     lineCount++;
                 } catch (ParseException e) {
@@ -115,15 +120,15 @@ public class DataStreamFromTxtService {
                     }
                     throw e;
                 }
-
             } else {
                 lastLine = lineCount-1;
+                LOGGER.info("Finish reading input file, total number of lines is {}", lastLine );
                 finishreading = true;
+                // Close reader after reading finished
                 bufferedReader.close();
                 if (!toReturn.isEmpty()) {
                     readBuffered.add(toReturn);
                 }
-                LOGGER.info("I am retruned ----------------------");
                 return;
             }
         }
@@ -144,7 +149,7 @@ public class DataStreamFromTxtService {
             }
             readlock.unlock();
         }
-        LOGGER.info("-------------------- full stoped");
+        LOGGER.info("the execution of readManager finishes");
     }
 
     List<Event> aggregateJson(JSONArray inputArray) {
@@ -153,8 +158,9 @@ public class DataStreamFromTxtService {
             JSONObject jsonNewFromRead = (JSONObject) item;
             JSONObject jsonInUnpaired = unpairedEvent.get(jsonNewFromRead.get("id"));
             if (jsonInUnpaired != null){
+                // Merge two JSONs refers to start and finish together. in case type and host only in one of them.
                 JSONObject jsonWithDuration =  jsonMerger(jsonNewFromRead,jsonInUnpaired);
-                LOGGER.info("---------------------- this is the json to write {}",jsonWithDuration );
+                LOGGER.debug("The JSON to write {}", jsonWithDuration);
                 toReturn.add( jsonToEventAdapter(jsonWithDuration));
                 unpairedEvent.remove(jsonWithDuration.get("id"));
                 currentLineWrite = (Integer) jsonNewFromRead.get("lineCount");
@@ -168,12 +174,9 @@ public class DataStreamFromTxtService {
     }
 
     boolean checkWriteFinished() {
-        LOGGER.info("---------------------- the line count is {}",currentLineWrite );
-        LOGGER.info("----------------------finishreading {}",finishreading );
-
-
+        LOGGER.debug("Writer has reached line {}", currentLineWrite );
+        LOGGER.debug("The reading finish status {}",finishreading );
         if (finishreading && lastLine.equals(currentLineWrite)){
-            LOGGER.info("------------------------ COUNT REACHED  WRITE FINISH ");
             return  true;
         }
         else{
@@ -182,6 +185,7 @@ public class DataStreamFromTxtService {
     }
     JSONObject jsonMerger(JSONObject object1, JSONObject object2){
         JSONObject jsonMerge = new JSONObject();
+        //Calculate the duration
         int duration = (int) Math.abs((long) object1.get("timestamp") - (long) object2.get("timestamp"));
         List<JSONObject> inputList = Arrays.asList(object1, object2);
         for (JSONObject jsonObj : inputList ){
@@ -223,10 +227,8 @@ public class DataStreamFromTxtService {
         }
     }
     void writeDBManager() throws InterruptedException {
-        LOGGER.info("---------------------WriteDBManager Start");
         while (true){
             writelock.lock();
-            LOGGER.info("-------------------- manager EACH RUN START");
             if(checkWriteFinished()){
                 List<Event> eventToWrite = new ArrayList<>();
                 for (Object item: (unpairedEvent.values())){
@@ -234,20 +236,23 @@ public class DataStreamFromTxtService {
                     eventToWrite.add(jsonToEventAdapter(unPairedJsonToWrite)) ;
                 }
                writeToDb(eventToWrite);
-                 return;
+                LOGGER.info("the execution of writeManager finishes");
+                return;
             }
 
             if (!readBuffered.isEmpty())
             {
                 JSONArray firstArray = readBuffered.get(0);
+                JSONObject firstElement = (JSONObject) firstArray.get(0);
+                JSONObject lastElement = (JSONObject) firstArray.get(firstArray.size()-1);
+
                 readBuffered.remove(0);
-                List<Event>  toWrite = aggregateJson(firstArray);
+                LOGGER.info("About to process line from {} to {}", firstElement.get("lineCount"),  lastElement.get("lineCount"));
+                List<Event> toWrite = aggregateJson(firstArray);
                 writeToDb(toWrite);
-                LOGGER.info("-------------------- manager EACH RUN finish");
                 writelock.unlock();
             }
             else{
-                LOGGER.info("-------------------- manager EACH RUN SLEEP");
                 Thread.sleep(SLEEP);
                 writelock.unlock();
             }

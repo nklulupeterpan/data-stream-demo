@@ -21,7 +21,7 @@ public class GenerateInputService {
             File file = sourceFileUtility.getInputFileObj();
             file.createNewFile();
             FileWriter fileWriter = new FileWriter(file);
-            JSONArray jsonArray = generateInputService.generateRandomInput(100, 8);
+            JSONArray jsonArray = generateInputService.generateRandomInput(1000, 8);
             generateInputService.writeToFile(fileWriter, jsonArray);
             fileWriter.flush();
             fileWriter.close();
