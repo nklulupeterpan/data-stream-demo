@@ -19,7 +19,7 @@ public class DataStreamConfig {
     }
 
     @Bean
-    public GenerateInputService generateInput() {
+    public GenerateInputService generateInputService() {
         return new GenerateInputService();
     }
 
@@ -29,7 +29,7 @@ public class DataStreamConfig {
     }
 
     @Bean
-    public DataStreamFromTxtService dataStreamFromTxt() {
+    public DataStreamFromTxtService dataStreamFromTxtService() {
         return new DataStreamFromTxtService();
     }
 }
