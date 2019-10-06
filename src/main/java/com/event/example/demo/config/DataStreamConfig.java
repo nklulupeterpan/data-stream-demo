@@ -2,6 +2,7 @@ package com.event.example.demo.config;
 
 import javax.sql.DataSource;
 
+import com.event.example.demo.fileUtility.SourceFileUtility;
 import com.event.example.demo.services.GenerateInput;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +17,14 @@ public class DataStreamConfig {
         return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.HSQL).addScript("classpath:data-schema.sql").build();
     }
 
-        @Bean
-        public GenerateInput generateInput(){
-            return new GenerateInput();
-        }
+    @Bean
+    public GenerateInput generateInput() {
+        return new GenerateInput();
+    }
+
+    @Bean
+    public SourceFileUtility sourceFileUtility() {
+        return new SourceFileUtility();
+    }
 
 }

@@ -42,35 +42,4 @@ public class DataStreamResource {
             return new ResponseEntity<>("Fail to generate the input File ", HttpStatus.OK);
         }
     }
-//
-//    /**
-//     * Endpoint for generating simple DOCx report
-//     */
-//    @GetMapping(value = "/xls", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<String> generateXLSReport() {
-//        LOGGER.info("Generating Fund XLS report.");
-//
-//        boolean success =false;
-//        if(configFilter().getJasperPrint() != null) {
-//            xlsExporter.setJasperPrint(configFilter().getJasperPrint());
-//             success = xlsExporter.exportToXlsx("fundReport.xlsx", "Fund Data");
-//        }
-//        if (success) {
-//            return new ResponseEntity<>("XLS Report is successfully generated ", HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity<>("XLS Report cannot be generated ", HttpStatus.OK);
-//        }
-//    }
-//
-//    private ReportFiller configFilter() {
-//        reportFiller.setReportFileName("fundReport.jrxml");
-//        Map<String, Object> parameters = new HashMap<>();
-//        parameters.put("title", "Fund Report Example");
-//
-//        reportFiller.setParameters(parameters);
-//        reportFiller.fillReport();
-//
-//        return reportFiller;
-//    }
-
 }
