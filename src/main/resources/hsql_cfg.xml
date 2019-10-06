@@ -6,9 +6,9 @@
     <property name="properties"><bean class="org.hsqldb.persist.HsqlProperties">
         <constructor-arg><props>
             <prop key="server.database.0">mem:testdb</prop>
-            <prop key="server.dbname.0">testdb</prop><!--DB name for network connection-->
+            <prop key="server.dbname.0">testdb</prop>
             <prop key="server.no_system_exit">true</prop>
-            <prop key="server.port">9001</prop><!--default port is 9001 -->
+            <prop key="server.port">9001</prop>
         </props></constructor-arg>
     </bean></property>
 </bean>

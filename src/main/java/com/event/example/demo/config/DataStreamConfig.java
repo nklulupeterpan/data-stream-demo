@@ -3,7 +3,8 @@ package com.event.example.demo.config;
 import javax.sql.DataSource;
 
 import com.event.example.demo.fileUtility.SourceFileUtility;
-import com.event.example.demo.services.GenerateInput;
+import com.event.example.demo.services.DataStreamFromTxtService;
+import com.event.example.demo.services.GenerateInputService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -18,8 +19,8 @@ public class DataStreamConfig {
     }
 
     @Bean
-    public GenerateInput generateInput() {
-        return new GenerateInput();
+    public GenerateInputService generateInput() {
+        return new GenerateInputService();
     }
 
     @Bean
@@ -27,4 +28,8 @@ public class DataStreamConfig {
         return new SourceFileUtility();
     }
 
+    @Bean
+    public DataStreamFromTxtService dataStreamFromTxt() {
+        return new DataStreamFromTxtService();
+    }
 }

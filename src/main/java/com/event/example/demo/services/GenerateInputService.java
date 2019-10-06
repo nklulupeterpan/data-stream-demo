@@ -10,19 +10,19 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class GenerateInput {
+public class GenerateInputService {
 
     @Autowired
     SourceFileUtility sourceFileUtility;
 
-    public boolean writeInputData() throws IOException {
+    public boolean writeInputData() {
         try {
-            GenerateInput generateInput = new GenerateInput();
+            GenerateInputService generateInputService = new GenerateInputService();
             File file = sourceFileUtility.getInputFileObj();
             file.createNewFile();
             FileWriter fileWriter = new FileWriter(file);
-            JSONArray jsonArray = generateInput.generateRandomInput(100, 8);
-            generateInput.writeToFile(fileWriter, jsonArray);
+            JSONArray jsonArray = generateInputService.generateRandomInput(100, 8);
+            generateInputService.writeToFile(fileWriter, jsonArray);
             fileWriter.flush();
             fileWriter.close();
         } catch (Exception ex) {
@@ -50,7 +50,6 @@ public class GenerateInput {
             fileWriter.write(objTrans.toJSONString() + System.lineSeparator());
         }
     }
-
 
     JSONObject generateJsonObj(int idInt, String status, Long timestamp) {
         Random random = new Random();
