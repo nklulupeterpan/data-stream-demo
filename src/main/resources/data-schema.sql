@@ -1,0 +1,6 @@
+CREATE TABLE data(
+    ID INT  NOT NULL PRIMARY KEY,
+    id VARCHAR(19),
+);
+
+
